@@ -116,6 +116,142 @@ impl Client {
         )?;
         Ok(self.create_future(req))
     }
+
+    pub fn lookup_show(&self, show: ShowLookup)
+        -> Result<QueryFuture<Option<TVShow>>, Error>
+    {
+        // This request should return either a redirect or a 404, so the future
+        // resolves to a URL, the content of the location header.
+        let initial_lookup = create_request(
+            "/lookup/shows",
+            Some(vec![show.as_query_param()]),
+            None
+        )?;
+        let inner = Box::new(self.http_client.request(initial_lookup));
+        let http_client = self.http_client.clone();
+
+        Ok(QueryFuture {
+            state: QueryState::AwaitingRedirect { http_client, inner },
+            _marker: PhantomData,
+        })
+    }
+
+    pub fn search_people(&self, query: &str)
+        -> Result<QueryFuture<Vec<PeopleSearchResult>>, Error>
+    {
+        let req = create_request("/search/people", Some(vec![("q", query)]), None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn today_schedule(&self, country: Option<&str>, date: Option<&str>)
+        -> Result<QueryFuture<Vec<Episode>>, Error>
+    {
+        let params = vec!["country", "date"].into_iter()
+            .zip(vec![country, date])
+            .filter(|(_, p)| p.is_some())
+            .map(|(k, p)| (k, p.unwrap()))
+            .collect::<Vec<(&str, &str)>>();
+        let params = if params.is_empty() { None } else { Some(params) };
+
+        let req = create_request("/schedule", params, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn full_schedule(&self) -> Result<QueryFuture<Vec<Episode>>, Error> {
+        let req = create_request("/schedule/full", None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_main_info(&self, id: &str) -> Result<QueryFuture<TVShow>, Error> {
+        let req = create_request(&["/shows/", id].join(""), None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_episode_list(&self, id: &str, specials: bool)
+        -> Result<QueryFuture<Vec<Episode>>, Error>
+    {
+        let path = &["/shows/", id, "/episodes"].join("");
+        // I'm not sure how specials actually work. I've tried looking at the JSON
+        // returned when the specials param is set, but I've been unable to find any
+        // shows that return any special episodes.
+        let params = if specials { Some(vec![("specials", "1")]) }  else { None };
+        let req = create_request(path, params, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_episode_by_number(&self, id: &str, season: u64, episode: u64)
+        -> Result<QueryFuture<Episode>, Error>
+    {
+        let path = &["/shows/", id, "/episodebynumber"].join("");
+        let season = season.to_string();
+        let episode = episode.to_string();
+        let params = Some(vec![("season", season.as_str()), ("number", episode.as_str())]);
+        let req = create_request(path, params, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_episodes_by_date(&self, id: &str, date: &str)
+        -> Result<QueryFuture<Vec<Episode>>, Error>
+    {
+        let path = &["/shows/", id, "/episodesbydate"].join("");
+        let req = create_request(path, Some(vec![("date", date)]), None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_seasons(&self, id: &str)
+        -> Result<QueryFuture<Vec<TVShowSeason>>, Error>
+    {
+        let path = &["/shows/", id, "/seasons"].join("");
+        let req = create_request(path, None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn season_episodes(&self, season_id: &str)
+        -> Result<QueryFuture<Vec<Episode>>, Error>
+    {
+        let path = &["/seasons/", season_id, "/episodes"].join("");
+        let req = create_request(path, None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_cast(&self, id: &str)
+        -> Result<QueryFuture<Vec<CastPerson>>, Error>
+    {
+        let path = &["/shows/", id, "/cast"].join("");
+        let req = create_request(path, None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_crew(&self, id: &str)
+        -> Result<QueryFuture<Vec<CrewPerson>>, Error>
+    {
+        let path = &["/shows/", id, "/crew"].join("");
+        let req = create_request(path, None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_akas(&self, id: &str)
+        -> Result<QueryFuture<Vec<AKA>>, Error>
+    {
+        let path = &["/shows/", id, "/akas"].join("");
+        let req = create_request(path, None, None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn show_index(&self, page: Option<u64>)
+        -> Result<QueryFuture<Vec<TVShow>>, Error>
+    {
+        let page = page.unwrap_or(1).to_string();
+        let req = create_request("/shows", Some(vec![("page", &page)]), None)?;
+        Ok(self.create_future(req))
+    }
+
+    pub fn person_main_info(&self, person_id: &str)
+        -> Result<QueryFuture<Person>, Error>
+    {
+        let req = create_request(&["/people/", person_id].join(""), None, None)?;
+        Ok(self.create_future(req))
+    }
 }
 
 fn create_request(
