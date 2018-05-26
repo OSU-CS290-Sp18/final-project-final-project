@@ -9,6 +9,7 @@ extern crate serde_json;
 extern crate tokio;
 extern crate url;
 
+mod api;
 mod client;
 mod error;
 mod resources;
