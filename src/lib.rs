@@ -9,6 +9,8 @@ extern crate serde_json;
 extern crate tokio;
 extern crate url;
 
+mod resources;
+
 #[cfg(test)]
 mod tests {
     #[test]
