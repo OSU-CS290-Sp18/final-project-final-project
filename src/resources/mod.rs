@@ -1,3 +1,3 @@
-pub use tv_show::*;
+pub use self::tv_show::*;
 
 pub mod tv_show;
