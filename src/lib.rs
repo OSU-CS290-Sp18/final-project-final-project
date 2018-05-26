@@ -9,10 +9,10 @@ extern crate serde_json;
 extern crate tokio;
 extern crate url;
 
-mod api;
-mod client;
-mod error;
-mod resources;
+pub mod api;
+pub mod client;
+pub mod error;
+pub mod resources;
 
 #[cfg(test)]
 mod tests {
