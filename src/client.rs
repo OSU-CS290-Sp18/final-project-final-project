@@ -124,9 +124,7 @@ fn create_request(
     embed: Option<LinkEmbed>)
     -> Result<Request<Body>, Error>
 {
-    let mut url = String::from(TVMAZE_BASE_URL) + path;
-
-    if query_params.is_some() || embed.is_some() {
+    let url = if query_params.is_some() || embed.is_some() {
         let mut serializer = Serializer::new(String::new());
 
         if let Some(query_params) = query_params {
@@ -148,9 +146,10 @@ fn create_request(
             }
         }
 
-        url += "?";
-        url += &serializer.finish();
-    }
+        [TVMAZE_BASE_URL, path, "?", &serializer.finish()].join("")
+    } else {
+        [TVMAZE_BASE_URL, path].join("")
+    };
 
     Request::get(url).body(Body::empty()).map_err(Error::from)
 }
