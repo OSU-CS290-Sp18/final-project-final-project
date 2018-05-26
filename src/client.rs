@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use api::*;
 use error::Error;
-use resources::TVShow;
+use resources::*;
 
 use futures::{future, Async, Future, Poll, Stream};
 use hyper::{self, Request, Response};
