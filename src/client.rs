@@ -52,8 +52,9 @@ impl<R: DeserializeOwned> Future for QueryFuture<R> {
 
                             match url {
                                 Ok(Ok(url)) => {
-                                    let uri = url_to_https(url)?;
-                                    let req = Request::get(uri).body(Body::empty())?;
+                                    #[cfg(feature = "tls")]
+                                    let url = url_to_https(url)?;
+                                    let req = Request::get(url).body(Body::empty())?;
                                     let inner = http_client.request(req)
                                         .and_then(|res| res.into_body().concat2())
                                         .map(|chunk| chunk.to_vec())
@@ -311,6 +312,7 @@ fn create_request(
     Request::get(url).body(Body::empty()).map_err(Error::from)
 }
 
+#[cfg(feature = "tls")]
 fn url_to_https(url: &str) -> Result<Uri, Error> {
     let uri: Uri = url.parse()?;
     let mut parts: Parts = uri.into();

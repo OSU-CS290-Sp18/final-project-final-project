@@ -45,18 +45,21 @@ impl From<ToStrError> for Error {
     }
 }
 
+#[cfg(feature = "tls")]
 impl From<hyper_tls::Error> for Error {
     fn from(error: hyper_tls::Error) -> Self {
         Error::TLSError(error)
     }
 }
 
+#[cfg(feature = "tls")]
 impl From<InvalidUriParts> for Error {
     fn from(error: InvalidUriParts) -> Self {
         Error::ConvertingLocationFailed(error)
     }
 }
 
+#[cfg(feature = "tls")]
 impl From<InvalidUri> for Error {
     fn from(error: InvalidUri) -> Self {
         Error::ParsingLocationFailed(error)
