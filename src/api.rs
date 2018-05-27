@@ -4,14 +4,14 @@ pub const TVMAZE_BASE_URL: &'static str = "http://api.tvmaze.com";
 
 #[derive(Debug, Deserialize)]
 pub struct ShowSearchResult {
-    score: f64,
-    show: TVShow,
+    pub score: f64,
+    pub show: TVShow,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct PeopleSearchResult {
-    score: f64,
-    person: Person,
+    pub score: f64,
+    pub person: Person,
 }
 
 #[derive(Debug)]
