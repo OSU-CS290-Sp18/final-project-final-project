@@ -6,7 +6,7 @@ use api::*;
 use error::Error;
 use resources::*;
 
-use futures::{future, Async, Future, Poll, Stream};
+use futures::{Async, Future, Poll, Stream};
 use http::uri::{Parts, Scheme};
 use hyper::{self, Request, Response, Uri};
 use hyper::client::HttpConnector;

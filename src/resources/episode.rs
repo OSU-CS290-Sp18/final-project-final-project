@@ -1,5 +1,4 @@
 use resources::general::*;
-use resources::TVShow;
 
 #[derive(Debug, Deserialize)]
 pub struct Episode {
