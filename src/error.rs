@@ -1,16 +1,23 @@
 use http;
+use http::uri::{InvalidUri, InvalidUriParts};
 use hyper;
 use hyper::header::ToStrError;
+#[cfg(feature = "tls")]
+use hyper_tls;
 use serde_json;
 
 #[derive(Debug)]
 pub enum Error {
+    ConvertingLocationFailed(InvalidUriParts),
     DeserializationError(serde_json::Error),
     HTTPHeaderConversionError(ToStrError),
     HTTPError(http::Error),
     HTTPClientError(hyper::Error),
     MissingLocationHeader,
+    ParsingLocationFailed(InvalidUri),
     ShowNotFound,
+    #[cfg(feature = "tls")]
+    TLSError(hyper_tls::Error),
     UnexpectedResponse,
 }
 
@@ -35,5 +42,23 @@ impl From<serde_json::Error> for Error {
 impl From<ToStrError> for Error {
     fn from(error: ToStrError) -> Self {
         Error::HTTPHeaderConversionError(error)
+    }
+}
+
+impl From<hyper_tls::Error> for Error {
+    fn from(error: hyper_tls::Error) -> Self {
+        Error::TLSError(error)
+    }
+}
+
+impl From<InvalidUriParts> for Error {
+    fn from(error: InvalidUriParts) -> Self {
+        Error::ConvertingLocationFailed(error)
+    }
+}
+
+impl From<InvalidUri> for Error {
+    fn from(error: InvalidUri) -> Self {
+        Error::ParsingLocationFailed(error)
     }
 }

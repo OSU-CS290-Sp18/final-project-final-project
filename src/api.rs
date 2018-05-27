@@ -1,6 +1,10 @@
 use resources::{Person, TVShow};
 
+#[cfg(not(feature = "tls"))]
 pub const TVMAZE_BASE_URL: &'static str = "http://api.tvmaze.com";
+
+#[cfg(feature = "tls")]
+pub const TVMAZE_BASE_URL: &'static str = "https://api.tvmaze.com";
 
 #[derive(Debug, Deserialize)]
 pub struct ShowSearchResult {

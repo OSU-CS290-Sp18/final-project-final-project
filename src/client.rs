@@ -7,15 +7,21 @@ use error::Error;
 use resources::*;
 
 use futures::{future, Async, Future, Poll, Stream};
-use hyper::{self, Request, Response};
+use http::uri::{Parts, Scheme};
+use hyper::{self, Request, Response, Uri};
 use hyper::client::HttpConnector;
 use hyper::body::Body;
+#[cfg(feature = "tls")]
+use hyper_tls::HttpsConnector;
 use serde::de::DeserializeOwned;
 use serde_json;
 use url::form_urlencoded::Serializer;
 
 pub enum QueryState {
     AwaitingRedirect {
+        #[cfg(feature = "tls")]
+        http_client: Arc<hyper::Client<HttpsConnector<HttpConnector>, Body>>,
+        #[cfg(not(feature = "tls"))]
         http_client: Arc<hyper::Client<HttpConnector, Body>>,
         inner: Box<Future<Item=Response<Body>, Error=hyper::Error>>,
     },
@@ -46,7 +52,8 @@ impl<R: DeserializeOwned> Future for QueryFuture<R> {
 
                             match url {
                                 Ok(Ok(url)) => {
-                                    let req = Request::get(url).body(Body::empty())?;
+                                    let uri = url_to_https(url)?;
+                                    let req = Request::get(uri).body(Body::empty())?;
                                     let inner = http_client.request(req)
                                         .and_then(|res| res.into_body().concat2())
                                         .map(|chunk| chunk.to_vec())
@@ -77,14 +84,28 @@ impl<R: DeserializeOwned> Future for QueryFuture<R> {
 }
 
 pub struct Client {
+    #[cfg(feature = "tls")]
+    http_client: Arc<hyper::Client<HttpsConnector<HttpConnector>, Body>>,
+    #[cfg(not(feature = "tls"))]
     http_client: Arc<hyper::Client<HttpConnector, Body>>,
 }
 
 impl Client {
+    #[cfg(not(feature = "tls"))]
     pub fn new() -> Client {
         Client {
             http_client: Arc::new(hyper::Client::new()),
         }
+    }
+
+    #[cfg(feature = "tls")]
+    pub fn new() -> Result<Client, Error> {
+        let mut connector = HttpsConnector::new(4)?;
+        connector.force_https(true);
+
+        Ok(Client {
+            http_client: Arc::new(hyper::Client::builder().build(connector))
+        })
     }
 
     fn create_future<R: DeserializeOwned>(&self, req: Request<Body>) -> QueryFuture<R> {
@@ -288,4 +309,11 @@ fn create_request(
     };
 
     Request::get(url).body(Body::empty()).map_err(Error::from)
+}
+
+fn url_to_https(url: &str) -> Result<Uri, Error> {
+    let uri: Uri = url.parse()?;
+    let mut parts: Parts = uri.into();
+    parts.scheme = Some(Scheme::HTTPS);
+    Uri::from_parts(parts).map_err(Error::from)
 }
