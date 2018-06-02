@@ -14,7 +14,7 @@ use hyper::Uri;
 use hyper::client::HttpConnector;
 use hyper::body::Body;
 #[cfg(feature = "tls")]
-use hyper_tls::HttpsConnector;
+use hyper_tls::{self, HttpsConnector};
 use serde::de::DeserializeOwned;
 use serde_json;
 use url::form_urlencoded::Serializer;
@@ -102,7 +102,7 @@ impl Client {
     }
 
     #[cfg(feature = "tls")]
-    pub fn new() -> Result<Client, Error> {
+    pub fn new() -> Result<Client, hyper_tls::Error> {
         let mut connector = HttpsConnector::new(4)?;
         connector.force_https(true);
 
