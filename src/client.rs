@@ -1,6 +1,5 @@
 use std::io::Cursor;
 use std::marker::PhantomData;
-use std::sync::Arc;
 
 use api::*;
 use error::Error;
@@ -17,12 +16,15 @@ use serde::de::DeserializeOwned;
 use serde_json;
 use url::form_urlencoded::Serializer;
 
+#[cfg(feature = "tls")]
+pub type HTTPClient = hyper::Client<HttpsConnector<HttpConnector>, Body>;
+
+#[cfg(not(feature = "tls"))]
+pub type HTTPClient = hyper::Client<HttpConnector, Body>;
+
 pub enum QueryState {
     AwaitingRedirect {
-        #[cfg(feature = "tls")]
-        http_client: Arc<hyper::Client<HttpsConnector<HttpConnector>, Body>>,
-        #[cfg(not(feature = "tls"))]
-        http_client: Arc<hyper::Client<HttpConnector, Body>>,
+        http_client: HTTPClient,
         inner: Box<Future<Item=Response<Body>, Error=hyper::Error>>,
     },
     AwaitingData(Box<Future<Item=Vec<u8>, Error=Error>>),
@@ -85,17 +87,14 @@ impl<R: DeserializeOwned> Future for QueryFuture<R> {
 }
 
 pub struct Client {
-    #[cfg(feature = "tls")]
-    http_client: Arc<hyper::Client<HttpsConnector<HttpConnector>, Body>>,
-    #[cfg(not(feature = "tls"))]
-    http_client: Arc<hyper::Client<HttpConnector, Body>>,
+    http_client: HTTPClient,
 }
 
 impl Client {
     #[cfg(not(feature = "tls"))]
     pub fn new() -> Client {
         Client {
-            http_client: Arc::new(hyper::Client::new()),
+            http_client: hyper::Client::new(),
         }
     }
 
@@ -105,7 +104,7 @@ impl Client {
         connector.force_https(true);
 
         Ok(Client {
-            http_client: Arc::new(hyper::Client::builder().build(connector))
+            http_client: hyper::Client::builder().build(connector)
         })
     }
 
