@@ -49,30 +49,29 @@ impl<R: DeserializeOwned> Future for QueryFuture<R> {
             let state = match self.state {
                 QueryState::AwaitingRedirect { ref http_client, ref mut inner } => {
                     let res = try_ready!(inner.poll());
-                    match res.status().as_u16() {
+                    let url = match res.status().as_u16() {
                         301 | 302 => {
-                            let url = res.headers().get("Location")
+                            res.headers().get("Location")
                                 .map(|loc| loc.to_str().map_err(Error::from))
-                                .ok_or(Error::MissingLocationHeader);
-
-                            match url {
-                                Ok(Ok(url)) => {
-                                    #[cfg(feature = "tls")]
-                                    let url = url_to_https(url)?;
-                                    let req = Request::get(url).body(Body::empty())?;
-                                    let inner = http_client.request(req)
-                                        .and_then(|res| res.into_body().concat2())
-                                        .map(|chunk| chunk.to_vec())
-                                        .map_err(Error::from);
-
-                                    QueryState::AwaitingData(Box::new(inner))
-                                }
-                                Ok(Err(e)) => { return Err(e); }
-                                Err(e) => { return Err(e); }
-                            }
+                                .ok_or(Error::MissingLocationHeader)
                         }
-                        404 => { return Err(Error::ShowNotFound); },
-                        _ => { return Err(Error::UnexpectedResponse); },
+                        404 => { return Err(Error::ShowNotFound); }
+                        _ => { return Err(Error::UnexpectedResponse); }
+                    };
+
+                    match url {
+                        Ok(Ok(url)) => {
+                            #[cfg(feature = "tls")]
+                            let url = url_to_https(url)?;
+                            let req = Request::get(url).body(Body::empty())?;
+                            let inner = http_client.request(req)
+                                .and_then(|res| res.into_body().concat2())
+                                .map(|chunk| chunk.to_vec())
+                                .map_err(Error::from);
+
+                            QueryState::AwaitingData(Box::new(inner))
+                        }
+                        Ok(Err(e)) | Err(e) => { return Err(e); }
                     }
                 }
 
