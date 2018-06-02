@@ -6,8 +6,11 @@ use error::Error;
 use resources::*;
 
 use futures::{Async, Future, Poll, Stream};
+#[cfg(feature = "tls")]
 use http::uri::{Parts, Scheme};
-use hyper::{self, Request, Response, Uri};
+use hyper::{self, Request, Response};
+#[cfg(feature = "tls")]
+use hyper::Uri;
 use hyper::client::HttpConnector;
 use hyper::body::Body;
 #[cfg(feature = "tls")]
