@@ -3,4 +3,10 @@ name = "unify"
 version = "0.1.0"
 authors = ["Jason Chen <jason@jcndrop.com>"]
 
+[workspace]
+members = [
+    "lib/providers/metadata/tvmaze"
+]
+
 [dependencies]
+tvmaze = { path = "lib/providers/metadata/tvmaze", features = ["tls"] }
