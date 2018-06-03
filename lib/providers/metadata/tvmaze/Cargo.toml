@@ -1,5 +1,5 @@
 [package]
-name = "tvmaze-rs"
+name = "tvmaze"
 version = "0.1.0"
 authors = ["Jason Chen <jason@jcndrop.com>"]
 
