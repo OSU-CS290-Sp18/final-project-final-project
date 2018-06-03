@@ -88,6 +88,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "deluge"
+version = "0.1.0"
+
+[[package]]
 name = "dtoa"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -699,6 +703,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "unify"
 version = "0.1.0"
 dependencies = [
+ "deluge 0.1.0",
  "tvmaze 0.1.0",
 ]
 

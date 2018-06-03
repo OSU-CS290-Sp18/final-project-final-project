@@ -5,8 +5,11 @@ authors = ["Jason Chen <jason@jcndrop.com>"]
 
 [workspace]
 members = [
+    "lib/providers/download/deluge",
     "lib/providers/metadata/tvmaze"
 ]
 
 [dependencies]
+deluge = { path = "lib/providers/download/deluge" }
+
 tvmaze = { path = "lib/providers/metadata/tvmaze", features = ["tls"] }

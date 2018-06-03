@@ -1,0 +1,6 @@
+[package]
+name = "deluge"
+version = "0.1.0"
+authors = ["Jason Chen <jason@jcndrop.com>"]
+
+[dependencies]
