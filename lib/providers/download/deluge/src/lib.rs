@@ -1,3 +1,8 @@
+extern crate bincode;
+extern crate serde;
+
+pub mod rencode;
+
 #[cfg(test)]
 mod tests {
     #[test]
