@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["Jason Chen <jason@jcndrop.com>"]
 
 [dependencies]
+bincode = "1.0.0"
+serde = "1.0.66"
