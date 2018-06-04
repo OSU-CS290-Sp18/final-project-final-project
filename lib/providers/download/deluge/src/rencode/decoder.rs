@@ -1,7 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
 use super::constants::*;
-use super::{Object, Float, Int};
+use super::{Float, Int, Object};
 
 use bincode::config;
 
@@ -11,9 +11,7 @@ pub struct Decoder {
 
 impl Decoder {
     pub fn new(data: Vec<u8>) -> Decoder {
-        Decoder {
-            data: data.into(),
-        }
+        Decoder { data: data.into() }
     }
 
     pub fn decode_next(&mut self) -> Option<Object> {
@@ -35,10 +33,12 @@ impl Decoder {
         let mut map = HashMap::new();
 
         if is_fixed_map(token) {
-            for _ in 0 .. (token - DICT_FIXED_START) {
+            for _ in 0..(token - DICT_FIXED_START) {
                 let key = match self.read_bytes()? {
                     Object::Str(s) => s,
-                    _ => { return None; }
+                    _ => {
+                        return None;
+                    }
                 };
                 let value = self.decode_next()?;
                 map.insert(key, value);
@@ -47,7 +47,9 @@ impl Decoder {
             while *self.data.front()? != CHR_TERM {
                 let key = match self.read_bytes()? {
                     Object::Str(s) => s,
-                    _ => { return None; }
+                    _ => {
+                        return None;
+                    }
                 };
                 let value = self.decode_next()?;
                 map.insert(key, value);
@@ -64,7 +66,7 @@ impl Decoder {
         let mut list = Vec::new();
 
         if is_fixed_list(token) {
-            for _ in 0 .. (token - LIST_FIXED_START) {
+            for _ in 0..(token - LIST_FIXED_START) {
                 list.push(self.decode_next()?);
             }
         } else {
@@ -112,7 +114,9 @@ impl Decoder {
         let len = match token {
             CHR_FLOAT32 => 4,
             CHR_FLOAT64 => 8,
-            _ => { return None; }
+            _ => {
+                return None;
+            }
         };
 
         let bytes: Vec<u8> = self.data.drain(0..len).collect();
@@ -132,7 +136,9 @@ impl Decoder {
         if is_embedded_pos_int(token) {
             return Some(Object::Int(Int::I8((INT_POS_FIXED_START + token) as i8)));
         } else if is_embedded_neg_int(token) {
-            return Some(Object::Int(Int::I8((INT_NEG_FIXED_START - 1 - token) as i8)));
+            return Some(Object::Int(Int::I8(
+                (INT_NEG_FIXED_START - 1 - token) as i8,
+            )));
         }
 
         let len = match token {
@@ -140,7 +146,9 @@ impl Decoder {
             CHR_INT2 => 2,
             CHR_INT4 => 4,
             CHR_INT8 => 8,
-            _ => { return None; }
+            _ => {
+                return None;
+            }
         };
 
         let bytes: Vec<u8> = self.data.drain(0..len).collect();

@@ -4,8 +4,8 @@ mod encoder;
 pub mod error;
 pub mod objects;
 
-pub use self::objects::{Object, Float, Int};
 pub use self::error::Error;
+pub use self::objects::{Float, Int, Object};
 
 use self::decoder::Decoder;
 use self::encoder::Encoder;

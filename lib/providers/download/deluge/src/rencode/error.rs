@@ -11,4 +11,3 @@ impl From<bincode::Error> for Error {
         Error::SerializationError(err)
     }
 }
-

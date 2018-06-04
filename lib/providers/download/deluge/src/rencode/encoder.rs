@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use super::constants::*;
-use super::{Object, Int, Float};
 use super::Error;
+use super::{Float, Int, Object};
 
 use bincode::config;
 
@@ -12,9 +12,7 @@ pub struct Encoder {
 
 impl Encoder {
     pub fn new() -> Encoder {
-        Encoder {
-            data: Vec::new(),
-        }
+        Encoder { data: Vec::new() }
     }
 
     pub fn into_bytes(mut self, obj: Object) -> Result<Vec<u8>, Error> {
