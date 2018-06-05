@@ -5,6 +5,7 @@ use super::Error;
 use super::{Float, Int, Object};
 
 use bincode::config;
+use serde::Serialize;
 
 pub struct Encoder {
     data: Vec<u8>,
@@ -81,33 +82,42 @@ impl Encoder {
 
     pub fn encode_float(&mut self, f: Float) -> Result<(), Error> {
         match f {
-            Float::F32(f) => {
-                self.data.append(&mut config().big_endian().serialize(&f)?);
-            }
-            Float::F64(f) => {
-                self.data.append(&mut config().big_endian().serialize(&f)?);
-            }
+            Float::F32(f) => self._encode_pack(f),
+            Float::F64(f) => self._encode_pack(f),
         }
-
-        Ok(())
     }
 
     pub fn encode_int(&mut self, i: Int) -> Result<(), Error> {
         match i {
             Int::I8(i) => {
-                self.data.append(&mut config().big_endian().serialize(&i)?);
+                if 0 <= i && i < (INT_POS_FIXED_COUNT as i8) {
+                    self.data.push(INT_POS_FIXED_START + (i as u8));
+                    Ok(())
+                } else if (-(INT_NEG_FIXED_COUNT as i8)) <= i && i < 0 {
+                    self.data.push(((INT_NEG_FIXED_START as i8) - 1 - i) as u8);
+                    Ok(())
+                } else {
+                    self.data.push(CHR_INT1);
+                    self._encode_pack(i)
+                }
             }
             Int::I16(i) => {
-                self.data.append(&mut config().big_endian().serialize(&i)?);
+                self.data.push(CHR_INT2);
+                self._encode_pack(i)
             }
             Int::I32(i) => {
-                self.data.append(&mut config().big_endian().serialize(&i)?);
+                self.data.push(CHR_INT4);
+                self._encode_pack(i)
             }
             Int::I64(i) => {
-                self.data.append(&mut config().big_endian().serialize(&i)?);
+                self.data.push(CHR_INT8);
+                self._encode_pack(i)
             }
         }
+    }
 
+    pub fn _encode_pack<T: Serialize>(&mut self, t: T) -> Result<(), Error> {
+        self.data.append(&mut config().big_endian().serialize(&t)?);
         Ok(())
     }
 
