@@ -18,23 +18,23 @@ impl Decoder {
         let token = self.data.front()?.clone();
 
         match token {
-            t if is_map(t) || is_fixed_map(t) => self.read_map(),
-            t if is_list(t) || is_fixed_list(t) => self.read_list(),
-            t if is_num(t) => self.read_num(),
-            t if is_bool(t) => self.read_bool(),
-            t if is_float(t) => self.read_float(),
-            t if is_any_int(t) => self.read_int(),
-            _ => self.read_bytes(),
+            t if is_map(t) || is_fixed_map(t) => self.decode_map(),
+            t if is_list(t) || is_fixed_list(t) => self.decode_list(),
+            t if is_num(t) => self.decode_num(),
+            t if is_bool(t) => self.decode_bool(),
+            t if is_float(t) => self.decode_float(),
+            t if is_any_int(t) => self.decode_int(),
+            _ => self.decode_bytes(),
         }
     }
 
-    fn read_map(&mut self) -> Option<Object> {
+    fn decode_map(&mut self) -> Option<Object> {
         let token = self.data.pop_front()?;
         let mut map = HashMap::new();
 
         if is_fixed_map(token) {
             for _ in 0..(token - DICT_FIXED_START) {
-                let key = match self.read_bytes()? {
+                let key = match self.decode_bytes()? {
                     Object::Str(s) => s,
                     _ => {
                         return None;
@@ -45,7 +45,7 @@ impl Decoder {
             }
         } else {
             while *self.data.front()? != CHR_TERM {
-                let key = match self.read_bytes()? {
+                let key = match self.decode_bytes()? {
                     Object::Str(s) => s,
                     _ => {
                         return None;
@@ -61,7 +61,7 @@ impl Decoder {
         Some(Object::Map(map))
     }
 
-    fn read_list(&mut self) -> Option<Object> {
+    fn decode_list(&mut self) -> Option<Object> {
         let token = self.data.pop_front()?;
         let mut list = Vec::new();
 
@@ -80,7 +80,7 @@ impl Decoder {
         Some(Object::List(list))
     }
 
-    fn read_num(&mut self) -> Option<Object> {
+    fn decode_num(&mut self) -> Option<Object> {
         let _token = self.data.pop_front()?;
         let mut bytes = Vec::new();
 
@@ -99,7 +99,7 @@ impl Decoder {
         }
     }
 
-    fn read_bool(&mut self) -> Option<Object> {
+    fn decode_bool(&mut self) -> Option<Object> {
         let token = self.data.pop_front()?;
 
         if token == CHR_TRUE {
@@ -109,7 +109,7 @@ impl Decoder {
         }
     }
 
-    fn read_float(&mut self) -> Option<Object> {
+    fn decode_float(&mut self) -> Option<Object> {
         let token = self.data.pop_front()?;
         let len = match token {
             CHR_FLOAT32 => 4,
@@ -130,7 +130,7 @@ impl Decoder {
         }
     }
 
-    fn read_int(&mut self) -> Option<Object> {
+    fn decode_int(&mut self) -> Option<Object> {
         let token = self.data.pop_front()?;
 
         if is_embedded_pos_int(token) {
@@ -168,8 +168,8 @@ impl Decoder {
         }
     }
 
-    fn read_bytes(&mut self) -> Option<Object> {
-        let bytes = self.read_string()?;
+    fn decode_bytes(&mut self) -> Option<Object> {
+        let bytes = self.decode_string()?;
 
         match String::from_utf8(bytes.clone()) {
             Ok(s) => Some(Object::Str(s)),
@@ -177,7 +177,7 @@ impl Decoder {
         }
     }
 
-    fn read_string(&mut self) -> Option<Vec<u8>> {
+    fn decode_string(&mut self) -> Option<Vec<u8>> {
         let token = self.data.front()?.clone();
 
         if is_fixed_string(token) {
