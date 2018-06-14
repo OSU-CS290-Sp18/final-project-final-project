@@ -24,7 +24,7 @@ export default class ShowsAdd extends React.Component {
     const that = this;
     const query = QStringify({ q: e.target.value });
 
-    fetch(`http://localhost:8000/api/search?${query}`)
+    fetch(`/api/search?${query}`)
       .then(res => res.json())
       .then(json => {
         that.setState({

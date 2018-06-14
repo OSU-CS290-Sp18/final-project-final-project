@@ -25,7 +25,7 @@ export default class ShowsTableRow extends React.Component {
 
     const that = this;
 
-    fetch('http://localhost:8000/api/shows', {
+    fetch('/api/shows', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'

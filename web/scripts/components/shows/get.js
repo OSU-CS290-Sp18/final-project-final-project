@@ -14,7 +14,7 @@ export default class ShowsGet extends React.Component {
 
   componentWillMount() {
     const that = this;
-    fetch(`http://localhost:8000/api/shows/${this.props.match.params.id}`)
+    fetch(`/api/shows/${this.props.match.params.id}`)
       .then(res => res.json())
       .then(json => {
         that.setState({
