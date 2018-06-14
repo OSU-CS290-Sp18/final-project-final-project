@@ -1,0 +1,25 @@
+@import '../settings';
+
+.episodes-table-row {
+  display: block;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid $lineGray;
+}
+
+.episodes-table-row:first-of-type {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.episodes-table-row > td {
+  display: inline-block;
+  margin-left: 40px;
+}
+
+.episodes-table-row > td:first-of-type {
+  width: 35px;
+  text-align: right;
+  margin-left: 0;
+}

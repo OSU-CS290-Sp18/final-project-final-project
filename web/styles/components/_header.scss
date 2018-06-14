@@ -1,0 +1,16 @@
+@import '../settings';
+
+.global-header {
+  display: flex;
+  align-items: center;
+  height: 70px;
+  background-color: $primaryRed;
+}
+
+.site-title {
+  position: absolute;
+  left: 150px;
+  color: #FFFFFF;
+  font-size: 2em;
+  font-weight: 900;
+}

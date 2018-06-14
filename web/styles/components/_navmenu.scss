@@ -1,0 +1,23 @@
+.nav-menu {
+  position: absolute;
+  right: 150px;
+}
+
+.nav-list {
+  display: flex;
+}
+
+.nav-item {
+  margin-right: 35px;
+}
+
+.nav-item:last-of-type {
+  margin-right: 0;
+}
+
+.nav-link {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: #FFFFFF;
+  text-decoration: none;
+}

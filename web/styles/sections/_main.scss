@@ -1,0 +1,35 @@
+@import '../settings';
+
+.main-default {
+  width: 80%;
+  margin-top: 60px;
+  margin-bottom: 100px;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+.default-page-title {
+  display: block;
+  padding-bottom: 10px;
+  border-bottom: 7px solid $lightBlue;
+  margin-bottom: 40px;
+  font-size: 3em;
+  font-weight: 700;
+}
+
+.default-subtitle {
+  display: block;
+  padding-bottom: 10px;
+  border-bottom: 3px solid $lightBlue;
+  margin-bottom: 25px;
+  font-size: 2em;
+  font-weight: 500;
+}
+
+.default-subsubtitle {
+  padding-bottom: 5px;
+  border-bottom: 1px solid $lightBlue;
+  margin-bottom: 10px;
+  font-size: 1.4em;
+  font-weight: 500;
+}

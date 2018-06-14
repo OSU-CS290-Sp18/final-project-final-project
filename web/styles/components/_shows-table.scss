@@ -1,0 +1,48 @@
+@import '../settings';
+
+.shows-table {
+  table-layout: fixed;
+}
+
+.shows-table-row {
+  display: flex;
+  border-bottom: 1px solid $lineGray;
+  padding-bottom: 15px;
+  padding-top: 15px;
+}
+
+.shows-table-row:first-of-type {
+  padding-top: 0;
+}
+
+.shows-table-row:last-of-type {
+  border-bottom: none;
+}
+
+.shows-table-img {
+  width: 100px;
+  height: 150px;
+}
+
+.shows-table-metadata-col {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.shows-table-title {
+  font-weight: 500;
+  font-size: 1em;
+}
+
+.shows-table-link {
+  color: $primaryRed;
+  text-decoration: none;
+}
+
+.shows-table-summary {
+  margin-top: 10px;
+}
+
+.shows-table-cnt.episodes {
+  margin-left: 10px;
+}

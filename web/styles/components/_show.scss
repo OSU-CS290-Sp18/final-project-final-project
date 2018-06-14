@@ -1,0 +1,46 @@
+@import '../settings';
+
+.show-cover-img {
+  width: 200px;
+  height: 300px;
+}
+
+.show-info {
+  display: flex;
+  margin-bottom: 50px;
+}
+
+.show-metadata {
+  margin-left: 20px;
+}
+
+.show-metadata > section {
+  margin-bottom: 20px;
+}
+
+.show-metadata > section:last-of-type {
+  margin-bottom: 0;
+}
+
+.show-season {
+  margin-bottom: 30px;
+}
+
+.show-season:last-of-type {
+  margin-bottom: 0;
+}
+
+.show-season > .episodes-table {
+  margin-left: 15px;
+}
+
+.show-season-titlebar {
+  position: relative;
+}
+
+.season-titlebar-ep-cnt {
+  display: block;
+  position: absolute;
+  right: 0;
+  bottom: 15px;
+}

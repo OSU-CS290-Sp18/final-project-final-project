@@ -1,0 +1,19 @@
+@import '../settings';
+
+.show-search-area {
+  margin-bottom: 40px;
+}
+
+.show-search-box {
+  display: block;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  width: 100%;
+  height: 60px;
+  font-size: 1.5em;
+  color: #000000;
+  border: 1px solid $lineGray;
+  padding-left: 15px;
+  padding-right: 15px;
+  background-color: #FFFFFF;
+}
