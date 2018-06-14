@@ -97,7 +97,8 @@ impl<R: DeserializeOwned> Future for QueryFuture<R> {
         }
     }
 }
-
+ 
+#[derive(Clone)]
 pub struct Client {
     http_client: HTTPClient,
 }

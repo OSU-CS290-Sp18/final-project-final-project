@@ -11,7 +11,7 @@ pub struct TVShow {
     pub language: String,
     pub genres: Vec<String>,
     pub status: String,
-    pub runtime: u64,
+    pub runtime: Option<u64>,
     pub premiered: Option<String>,
     pub official_site: Option<String>,
     pub schedule: TVShowSchedule,
@@ -21,7 +21,7 @@ pub struct TVShow {
     pub web_channel: Option<TVShowWebChannel>,
     pub externals: TVShowExternals,
     pub image: Option<ImageLinks>,
-    pub summary: String,
+    pub summary: Option<String>,
     pub updated: u64,
     #[serde(rename = "_embedded")]
     pub embeds: Option<Embed>,

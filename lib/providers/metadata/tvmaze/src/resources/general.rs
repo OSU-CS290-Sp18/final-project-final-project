@@ -13,7 +13,7 @@ pub struct Country {
     pub timezone: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ImageLinks {
     pub medium: String,
     pub original: String,

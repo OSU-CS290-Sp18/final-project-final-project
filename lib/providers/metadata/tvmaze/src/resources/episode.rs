@@ -9,7 +9,7 @@ pub struct Episode {
     pub number: Option<u64>,
     pub airdate: String,
     pub airtime: String,
-    pub airstamp: String,
+    pub airstamp: Option<String>,
     pub runtime: Option<u64>,
     pub image: Option<ImageLinks>,
     pub summary: Option<String>,
