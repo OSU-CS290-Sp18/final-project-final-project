@@ -1,15 +1,14 @@
 use std::collections::HashMap;
 
+use super::*;
 use error::WebError;
 use resources::tv_show::*;
-use super::*;
 
 use futures::{future, Future};
 use postgres::rows::{Row, Rows};
 use postgres::types::ToSql;
 
-pub const SELECT_JOIN_SHOW: &'static str =
-    "SELECT A.id as show_id,
+pub const SELECT_JOIN_SHOW: &'static str = "SELECT A.id as show_id,
             A.name as show_name,
             A.summary as show_summary,
             A.cover_img as show_cover_img,
@@ -51,7 +50,10 @@ pub fn process_single_joined_show<'a>(rows: Vec<Row<'a>>) -> TVShow {
             show_seasons.insert(season_id, TVShowSeason::from(row));
             episodes.insert(season_id, Vec::new());
         }
-        episodes.get_mut(&season_id).unwrap().push(TVShowEpisode::from(row));
+        episodes
+            .get_mut(&season_id)
+            .unwrap()
+            .push(TVShowEpisode::from(row));
     }
 
     let mut seasons: Vec<TVShowSeason> = show_seasons.into_iter().map(|(_, s)| s).collect();
@@ -66,8 +68,7 @@ pub fn process_single_joined_show<'a>(rows: Vec<Row<'a>>) -> TVShow {
 }
 
 pub fn process_multiple_joined_shows(rows: Rows) -> Vec<TVShow> {
-    rows
-        .into_iter()
+    rows.into_iter()
         .fold(HashMap::new(), |mut acc, r| {
             let show_id: i32 = r.get("show_id");
             if !acc.contains_key(&show_id) {
@@ -83,52 +84,53 @@ pub fn process_multiple_joined_shows(rows: Rows) -> Vec<TVShow> {
         .collect()
 }
 
-pub fn get_entire_show(id: i32, pool: Addr<Syn, DBExecutor>)
-    -> Box<Future<Item = Result<TVShow, WebError>, Error = WebError>>
-{
-    Box::new(pool
-        .send(DBQuery::new(
+pub fn get_entire_show(
+    id: i32,
+    pool: Addr<Syn, DBExecutor>,
+) -> Box<Future<Item = Result<TVShow, WebError>, Error = WebError>> {
+    Box::new(
+        pool.send(DBQuery::new(
             [SELECT_JOIN_SHOW, " WHERE A.id = $1"].join(""),
-            db_params![id]
-        ))
-        .map(move |rows| match rows {
-            Ok(rows) => {
-                if rows.len() == 0 {
-                    Err(WebError::ResourceNotFound(id))
-                } else {
-                    Ok(process_single_joined_show(rows.into_iter().collect()))
+            db_params![id],
+        )).map(move |rows| match rows {
+                Ok(rows) => {
+                    if rows.len() == 0 {
+                        Err(WebError::ResourceNotFound(id))
+                    } else {
+                        Ok(process_single_joined_show(rows.into_iter().collect()))
+                    }
                 }
-            }
-            Err(e) => Err(e.into()),
-        })
-        .map_err(WebError::from))
+                Err(e) => Err(e.into()),
+            })
+            .map_err(WebError::from),
+    )
 }
 
-pub fn get_all_shows(pool: Addr<Syn, DBExecutor>)
-    -> Box<Future<Item = Result<Vec<TVShow>, WebError>, Error = WebError>>
-{
-    Box::new(pool
-        .send(DBQuery::new(
-            SELECT_JOIN_SHOW.into(),
-            vec![],
-        ))
-        .map(|rows| match rows {
-            Ok(rows) => {
-                if rows.len() == 0 {
-                    Ok(vec![])
-                } else {
-                    Ok(process_multiple_joined_shows(rows))
+pub fn get_all_shows(
+    pool: Addr<Syn, DBExecutor>,
+) -> Box<Future<Item = Result<Vec<TVShow>, WebError>, Error = WebError>> {
+    Box::new(
+        pool.send(DBQuery::new(SELECT_JOIN_SHOW.into(), vec![]))
+            .map(|rows| match rows {
+                Ok(rows) => {
+                    if rows.len() == 0 {
+                        Ok(vec![])
+                    } else {
+                        Ok(process_multiple_joined_shows(rows))
+                    }
                 }
-            }
-            Err(e) => Err(e.into()),
-        })
-        .map_err(WebError::from))
+                Err(e) => Err(e.into()),
+            })
+            .map_err(WebError::from),
+    )
 }
 
-pub fn insert_show(show: &TVShow, pool: Addr<Syn, DBExecutor>)
-    -> Box<Future<Item = TVShow, Error = WebError>>
-{
-    let insert_show = pool.send(DBQuery::new(
+pub fn insert_show(
+    show: &TVShow,
+    pool: Addr<Syn, DBExecutor>,
+) -> Box<Future<Item = TVShow, Error = WebError>> {
+    let insert_show =
+        pool.send(DBQuery::new(
             "INSERT INTO tv_shows (
                 name,
                 summary,
@@ -143,14 +145,14 @@ pub fn insert_show(show: &TVShow, pool: Addr<Syn, DBExecutor>)
                       cover_img as show_cover_img,
                       provider as show_provider,
                       provider_id as show_provider_id,
-                      provider_url as show_provider_url".into(),
+                      provider_url as show_provider_url"
+                .into(),
             show.as_db_params(),
-        ))
-        .map(|rows| match rows {
-            Ok(rows) => TVShow::from(&rows.get(0)),
-            Err(e) => panic!("An ERROR: {:?}", e),
-        })
-        .map_err(WebError::from);
+        )).map(|rows| match rows {
+                Ok(rows) => TVShow::from(&rows.get(0)),
+                Err(e) => panic!("An ERROR: {:?}", e),
+            })
+            .map_err(WebError::from);
 
     if show.seasons.is_some() {
         let seasons = show.seasons.clone().unwrap();
@@ -163,21 +165,22 @@ pub fn insert_show(show: &TVShow, pool: Addr<Syn, DBExecutor>)
                 })
                 .collect();
 
-            insert_seasons(seasons, pool)
-                .map(move |seasons| {
-                    show.seasons = Some(seasons);
-                    show
-                })
+            insert_seasons(seasons, pool).map(move |seasons| {
+                show.seasons = Some(seasons);
+                show
+            })
         }))
     } else {
         Box::new(insert_show)
     }
 }
 
-pub fn insert_seasons(seasons: Vec<TVShowSeason>, pool: Addr<Syn, DBExecutor>)
-    -> Box<Future<Item = Vec<TVShowSeason>, Error = WebError>>
-{
-    let mut fut: Box<Future<Item = Vec<TVShowSeason>, Error = WebError>> = Box::new(future::ok(vec![]));
+pub fn insert_seasons(
+    seasons: Vec<TVShowSeason>,
+    pool: Addr<Syn, DBExecutor>,
+) -> Box<Future<Item = Vec<TVShowSeason>, Error = WebError>> {
+    let mut fut: Box<Future<Item = Vec<TVShowSeason>, Error = WebError>> =
+        Box::new(future::ok(vec![]));
 
     for season in seasons.into_iter() {
         let pool = pool.clone();
@@ -201,14 +204,14 @@ pub fn insert_seasons(seasons: Vec<TVShowSeason>, pool: Addr<Syn, DBExecutor>)
                           summary as season_summary,
                           cover_img as season_cover_img,
                           provider_id as season_provider_id,
-                          provider_url as season_provider_url".into(),
+                          provider_url as season_provider_url"
+                    .into(),
                 season.as_db_params(),
-            ))
-            .map(|row| match row {
-                Ok(row) => (seasons, TVShowSeason::from(&row.get(0))),
-                Err(e) => panic!("An ERROR: {:?}", e),
-            })
-            .map_err(WebError::from)
+            )).map(|row| match row {
+                    Ok(row) => (seasons, TVShowSeason::from(&row.get(0))),
+                    Err(e) => panic!("An ERROR: {:?}", e),
+                })
+                .map_err(WebError::from)
         }));
 
         fut = if episodes.is_some() {
@@ -223,12 +226,11 @@ pub fn insert_seasons(seasons: Vec<TVShowSeason>, pool: Addr<Syn, DBExecutor>)
                     })
                     .collect();
 
-                insert_episodes(episodes, pool_clone)
-                    .map(move |episodes| {
-                        season.episodes = Some(episodes);
-                        seasons.push(season);
-                        seasons
-                    })
+                insert_episodes(episodes, pool_clone).map(move |episodes| {
+                    season.episodes = Some(episodes);
+                    seasons.push(season);
+                    seasons
+                })
             }))
         } else {
             Box::new(tmp.map(|(mut seasons, season)| {
@@ -241,13 +243,14 @@ pub fn insert_seasons(seasons: Vec<TVShowSeason>, pool: Addr<Syn, DBExecutor>)
     fut
 }
 
-pub fn insert_episodes(episodes: Vec<TVShowEpisode>, pool: Addr<Syn, DBExecutor>)
-    -> Box<Future<Item = Vec<TVShowEpisode>, Error = WebError>>
-{
+pub fn insert_episodes(
+    episodes: Vec<TVShowEpisode>,
+    pool: Addr<Syn, DBExecutor>,
+) -> Box<Future<Item = Vec<TVShowEpisode>, Error = WebError>> {
     let params = episodes.into_iter().map(|e| e.as_db_params()).collect();
 
-    Box::new(pool
-        .send(DBInsertMany::new(
+    Box::new(
+        pool.send(DBInsertMany::new(
             "INSERT INTO tv_show_episodes (
                 show_id,
                 season_id,
@@ -273,11 +276,10 @@ pub fn insert_episodes(episodes: Vec<TVShowEpisode>, pool: Addr<Syn, DBExecutor>
                         provider_url as episode_provider_url",
             10,
             params,
-        ))
-        .map(|rows| match rows {
-            Ok(rows) => rows.into_iter().map(|r| TVShowEpisode::from(&r)).collect(),
-            Err(e) => panic!("An ERROR: {:?}", e),
-        })
-        .map_err(WebError::from)
+        )).map(|rows| match rows {
+                Ok(rows) => rows.into_iter().map(|r| TVShowEpisode::from(&r)).collect(),
+                Err(e) => panic!("An ERROR: {:?}", e),
+            })
+            .map_err(WebError::from),
     )
 }

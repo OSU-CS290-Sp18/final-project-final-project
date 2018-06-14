@@ -63,10 +63,7 @@ impl ResponseError for WebError {
             ResourceNotFound(id) => {
                 HttpResponse::NotFound().body(format!("Resource not found with id {}", id))
             }
-            _ => {
-                HttpResponse::InternalServerError().body(format!("Internal Error: {:?}", self))
-            }
+            _ => HttpResponse::InternalServerError().body(format!("Internal Error: {:?}", self)),
         }
     }
 }
-

@@ -1,12 +1,10 @@
-use resources::tv_show::*;
 use super::MetadataProvider;
+use resources::tv_show::*;
 
 use tvmaze::client::Client;
 use tvmaze::error::Error as TVMazeError;
 use tvmaze::resources::{
-    TVShow as TVMazeShow,
-    TVShowSeason as TVMazeSeason,
-    Episode as TVMazeEpisode,
+    Episode as TVMazeEpisode, TVShow as TVMazeShow, TVShowSeason as TVMazeSeason,
 };
 
 use futures::Future;
@@ -31,49 +29,50 @@ impl MetadataProvider for TVMazeProvider {
     type ProviderEpisode = TVMazeEpisode;
     type ProviderError = TVMazeError;
 
-    fn get_show(&self, id: &str)
-        -> Result<Box<Future<Item = TVShow, Error = Self::ProviderError>>, Self::ProviderError>
-    {
-        Ok(Box::new(self
-            .client
-            .show_main_info(id)?
-            .map(|r| Self::to_unify_show(&r))
+    fn get_show(
+        &self,
+        id: &str,
+    ) -> Result<Box<Future<Item = TVShow, Error = Self::ProviderError>>, Self::ProviderError> {
+        Ok(Box::new(
+            self.client
+                .show_main_info(id)?
+                .map(|r| Self::to_unify_show(&r)),
         ))
     }
 
-    fn get_show_seasons(&self, id: &str)
-        -> Result<Box<Future<Item = Vec<TVShowSeason>, Error = Self::ProviderError>>, Self::ProviderError>
-    {
-        Ok(Box::new(self
-            .client
-            .show_seasons(id)?
-            .map(|s| s.iter().map(|s| Self::to_unify_season(&s)).collect())
-        ))
+    fn get_show_seasons(
+        &self,
+        id: &str,
+    ) -> Result<
+        Box<Future<Item = Vec<TVShowSeason>, Error = Self::ProviderError>>,
+        Self::ProviderError,
+    > {
+        Ok(Box::new(self.client.show_seasons(id)?.map(|s| {
+            s.iter().map(|s| Self::to_unify_season(&s)).collect()
+        })))
     }
 
-    fn get_season_episodes(&self, _show_id: &str, season_id: &str)
-        -> Result<Box<Future<Item = Vec<TVShowEpisode>, Error = Self::ProviderError>>, Self::ProviderError>
-    {
-        Ok(Box::new(self
-            .client
-            .season_episodes(season_id)?
-            .map(|e| e.iter().map(|e| Self::to_unify_episode(&e)).collect())
-        ))
+    fn get_season_episodes(
+        &self,
+        _show_id: &str,
+        season_id: &str,
+    ) -> Result<
+        Box<Future<Item = Vec<TVShowEpisode>, Error = Self::ProviderError>>,
+        Self::ProviderError,
+    > {
+        Ok(Box::new(self.client.season_episodes(season_id)?.map(|e| {
+            e.iter().map(|e| Self::to_unify_episode(&e)).collect()
+        })))
     }
 
-    fn search(&self, q: &str)
-        -> Result<Box<Future<Item = Vec<TVShow>, Error = Self::ProviderError>>, Self::ProviderError>
+    fn search(
+        &self,
+        q: &str,
+    ) -> Result<Box<Future<Item = Vec<TVShow>, Error = Self::ProviderError>>, Self::ProviderError>
     {
-        Ok(Box::new(self
-            .client
-            .search_shows(q)?
-            .map(|r| {
-                r
-                    .iter()
-                    .map(|r| Self::to_unify_show(&r.show))
-                    .collect()
-            })
-        ))
+        Ok(Box::new(self.client.search_shows(q)?.map(|r| {
+            r.iter().map(|r| Self::to_unify_show(&r.show)).collect()
+        })))
     }
 
     fn to_unify_show(p: &Self::ProviderShow) -> TVShow {

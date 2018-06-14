@@ -52,22 +52,23 @@ fn main() {
             provider: TVMazeProvider::new(),
         };
 
-        App::with_state(state)
-            .scope("/api", |api_scope| {
-                api_scope
-                    .nested("/shows", |scope| {
-                        scope
-                            .resource("", |r| {
-                                r.get().with(shows_all);
-                                r.post().with(shows_add);
-                            })
-                            .resource("/{id}", |r| {
-                                r.get().with(shows_get);
-                            })
-                    })
-                    .route("/search", http::Method::GET, search)
-            })
-    }).bind("0.0.0.0:8080").expect("Unable to create HTTP server.").start();
+        App::with_state(state).scope("/api", |api_scope| {
+            api_scope
+                .nested("/shows", |scope| {
+                    scope
+                        .resource("", |r| {
+                            r.get().with(shows_all);
+                            r.post().with(shows_add);
+                        })
+                        .resource("/{id}", |r| {
+                            r.get().with(shows_get);
+                        })
+                })
+                .route("/search", http::Method::GET, search)
+        })
+    }).bind("0.0.0.0:8080")
+        .expect("Unable to create HTTP server.")
+        .start();
 
     println!("Listening on 8080.");
 

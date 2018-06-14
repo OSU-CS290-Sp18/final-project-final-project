@@ -52,7 +52,9 @@ impl ToSqlWrapper {
 impl Drop for ToSqlWrapper {
     fn drop(&mut self) {
         let ptr = self.inner.as_ptr();
-        unsafe { Box::from_raw(ptr); }
+        unsafe {
+            Box::from_raw(ptr);
+        }
     }
 }
 
@@ -78,9 +80,7 @@ pub struct DBInsertMany {
 
 impl DBExecutor {
     pub fn new(pool: Pool<PostgresConnectionManager>) -> DBExecutor {
-        DBExecutor {
-            pool,
-        }
+        DBExecutor { pool }
     }
 
     pub fn pool_get(&mut self) -> Result<PooledConnection<PostgresConnectionManager>, WebError> {
@@ -97,12 +97,9 @@ impl Handler<DBQuery> for DBExecutor {
 
     fn handle(&mut self, msg: DBQuery, _: &mut Self::Context) -> Self::Result {
         let conn = self.pool_get()?;
-        let params: Vec<&ToSql> = msg
-            .params
-            .iter()
-            .map(|p| p.get())
-            .collect();
-        conn.query(&msg.query, params.as_slice()).map_err(WebError::from)
+        let params: Vec<&ToSql> = msg.params.iter().map(|p| p.get()).collect();
+        conn.query(&msg.query, params.as_slice())
+            .map_err(WebError::from)
     }
 }
 
@@ -115,12 +112,14 @@ impl Handler<DBInsertMany> for DBExecutor {
         let mut param_num = 1;
 
         // Construct query parameters string
-        for i in 0 .. msg.params.len() {
-            let params: Vec<String> = (0..msg.values).map(|_| {
-                let param = format!("${}", param_num);
-                param_num += 1;
-                param
-            }).collect();
+        for i in 0..msg.params.len() {
+            let params: Vec<String> = (0..msg.values)
+                .map(|_| {
+                    let param = format!("${}", param_num);
+                    param_num += 1;
+                    param
+                })
+                .collect();
 
             query.push_str(" (");
             query += &params.join(",");
@@ -133,22 +132,15 @@ impl Handler<DBInsertMany> for DBExecutor {
 
         query += msg.returning;
 
-        let params: Vec<&ToSql> = msg
-            .params
-            .iter()
-            .flatten()
-            .map(|p| p.get())
-            .collect();
-        conn.query(&query, params.as_slice()).map_err(WebError::from)
+        let params: Vec<&ToSql> = msg.params.iter().flatten().map(|p| p.get()).collect();
+        conn.query(&query, params.as_slice())
+            .map_err(WebError::from)
     }
 }
 
 impl DBQuery {
     pub fn new(query: String, params: Vec<ToSqlWrapper>) -> DBQuery {
-        DBQuery {
-            query,
-            params,
-        }
+        DBQuery { query, params }
     }
 }
 
@@ -161,7 +153,12 @@ impl Message for DBInsertMany {
 }
 
 impl DBInsertMany {
-    pub fn new(query: &'static str, returning: &'static str, values: u8, params: Vec<Vec<ToSqlWrapper>>) -> DBInsertMany {
+    pub fn new(
+        query: &'static str,
+        returning: &'static str,
+        values: u8,
+        params: Vec<Vec<ToSqlWrapper>>,
+    ) -> DBInsertMany {
         DBInsertMany {
             query,
             returning,

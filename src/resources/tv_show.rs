@@ -1,7 +1,7 @@
 use db::{DBInsertable, ToSqlWrapper};
 
-use postgres::types::ToSql;
 use postgres::rows::Row;
+use postgres::types::ToSql;
 
 #[derive(Clone, Debug, Serialize, Deserialize, ToSql, FromSql)]
 #[postgres(name = "tv_metadata_provider")]
